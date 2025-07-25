@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<ruleset name="WordPress PHP Compatibility">
+	<description>Apply PHP compatibility checks to all WordPress Core files</description>
+
+	<!--
+	#############################################################################
+	COMMAND LINE ARGUMENTS
+	https://github.com/squizlabs/PHP_CodeSniffer/wiki/Annotated-Ruleset
+	#############################################################################
+	-->
+
+	<!-- Only scan PHP files. -->
+	<arg name="extensions" value="php"/>
+
+	<!-- Whenever possible, cache the scan results and re-use those for unchanged files on the next scan. -->
+	<arg name="cache" value=".cache/phpcompat.json"/>
+
+	<!-- Set the memory limit to 256M.
+		 For most standard PHP configurations, this means the memory limit will temporarily be raised.
+		 Ref: https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#specifying-phpini-settings
+	-->
+	<ini name="memory_limit" value="256M"/>
+
+	<!-- Strip the filepaths down to the relevant bit. -->
+	<arg name="basepath" value="./"/>
+
+	<!-- Check up to 20 files simultaneously. -->
+	<arg name="parallel" value="20"/>
+
+	<!-- Show sniff codes in all reports. -->
+	<arg value="ps"/>
+
+	<!--
+	#############################################################################
+	FILE SELECTION
+	Set which files will be subject to the scans executed using this ruleset.
+	#############################################################################
+	-->
+
+	<!-- For now, only the files in src are scanned. -->
+	<file>./src/</file>
+
+	<!-- Exclude Must-Use plugins. -->
+	<exclude-pattern>/src/wp-content/mu-plugins/*</exclude-pattern>
+
+	<!-- Exclude plugins. -->
+	<exclude-pattern>/src/wp-content/plugins/*</exclude-pattern>
+
+	<!-- Exclude themes except the twenty* themes. -->
+	<exclude-pattern>/src/wp-content/themes/(?!twenty)*</exclude-pattern>
+
+	<!-- Exclude translation files. -->
+	<exclude-pattern>/src/wp-content/languages/*</exclude-pattern>
+
+	<!--
+		PHPCompatibilityParagonieSodiumCompat prevents false positives in `sodium_compat`.
+		However, because these files are included in a non-standard path, false positives are triggered in WordPress Core.
+	-->
+	<exclude-pattern>src/wp-includes/sodium_compat/lib/php72compat_const\.php$</exclude-pattern>
+
+	<!--
+	#############################################################################
+	SET UP THE RULESET
+	#############################################################################
+	-->
+
+	<rule ref="PHPCompatibilityWP"/>
+
+	<!-- WordPress Core currently supports PHP 7.2+. -->
+	<config name="testVersion" value="7.2-"/>
+
+	<!--
+	#############################################################################
+	SELECTIVE EXCLUSIONS
+	Exclude specific files for specific sniffs and/or exclude sub-groups in sniffs.
+	#############################################################################
+	-->
+
+	<rule ref="PHPCompatibility.FunctionUse.NewFunctions.sodium_crypto_sign_keypair_from_secretkey_and_publickeyFound">
+		<exclude-pattern>/sodium_compat/src/Compat\.php$</exclude-pattern>
+	</rule>
+	<rule ref="PHPCompatibility.FunctionUse.NewFunctions.sodium_padFound">
+		<exclude-pattern>/sodium_compat/src/Compat\.php$</exclude-pattern>
+	</rule>
+	<rule ref="PHPCompatibility.FunctionUse.NewFunctions.sodium_unpadFound">
+		<exclude-pattern>/sodium_compat/src/Compat\.php$</exclude-pattern>
+	</rule>
+
+</ruleset>
